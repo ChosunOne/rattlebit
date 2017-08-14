@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c77abfa5-bae5-4f83-98f8-e5ce93ebf693</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>rattlebit.py</StartupFile>
+    <StartupFile>crypto.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="crypto.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="rattlebit.py" />
   </ItemGroup>
   <PropertyGroup>
