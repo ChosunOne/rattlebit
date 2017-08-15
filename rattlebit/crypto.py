@@ -47,6 +47,7 @@ def miller_rabin(n, k):
             return False
     return True
 
+# Find the integer square root of a number
 def isqrt(n):
     x = n
     y = (x + 1) // 2
@@ -89,14 +90,123 @@ def jacobi(D, n):
 # Find the first D that is == -1 for n
 def find_jacobi(n):
     D = 5
+    if n % 2 == 0:
+        return 0
     while jacobi(D, n) != -1:
         D = -(D + 2) if D > 0 else -(D - 2)
     return D
 
-# Determine if n is a Lucas Probable Prime
-def lucas_probable_prime(n, P, Q, D):
-    pass
+# Generate the kth term of the Lucas Sequence (inefficient but right)
+def lucas_term_u(P, Q, k):
+    U = [0, 1]
+    for x in range(2, k + 1):
+        term = P * U[x - 1] - Q * U[x - 2]
+        U += [int(term)]
+    return U
 
+# Generate the 2k+1 term of the Lucas sequence U
+def lucas_term_u_2k1(D, P, Q, U, V, k):
+    double_u = lucas_term_u_double(U, V)
+    double_v = lucas_term_v_double(V, Q,k)
+    term = int((P * double_u + double_v) / 2)
+    return term
+    
+# Calculate the 2kth term of the Lucas sequence U
+def lucas_term_u_double(U, V):
+    term = int(U * V)
+    return term
+
+# Generate the 2k+1 term of the Lucas sequence V
+def lucas_term_v_2k1(D, P, Q, U, V, k):
+    double_u = lucas_term_u_double(U, V)
+    double_v = lucas_term_v_double(V, Q, k)
+    term = int((D * double_u + P * double_v) / 2)
+    return term
+
+# Calculate the 2kth term of the Lucas sequence V
+def lucas_term_v_double(V, Q, k):
+    term = int(pow(V, 2) - 2 * pow(Q, k))
+    return term
+
+# Calculate the required terms to reach needed term
+def calc_terms(n):
+    binary = "{0:b}".format(n)
+    terms = [1]
+    term = 1
+    for x in range(1, len(binary)):
+        bit = binary[x]
+        if bit == '0':
+            term *= 2
+        else:
+            term *= 2
+            terms += [term]
+            term += 1
+        terms += [term]
+    return terms
+
+# Determine if n is a Lucas Probable Prime
+def lucas_probable_prime(n):
+    if 0 < n < 4:
+        return True
+
+    # Find D from the Jacobi Symbol and prepare for Lucas test
+    D = find_jacobi(n)
+    P = 1
+    Q = (1 - D) / 4
+    Dn = n + 1
+
+    # Setup computation accelerated by binary expansion of terms
+    binary = "{0:b}".format(Dn)
+    U = 1
+    V = P
+    k = 1
+
+    # TODO: Delete Debug counters
+    debug_terms = [1]
+    debug_u = [U]
+    debug_v = [V]
+    debug_u_correct = [U]
+
+    # Find the Un+1 and Vn+1 terms of the Lucas Sequence
+    for x in range(1, len(binary)):
+        bit = binary[x]
+        if bit == '0':
+            U = lucas_term_u_double(U, V)
+            V = lucas_term_v_double(V, Q, k)
+            k *= 2
+            debug_terms += [k]
+            debug_u += [U]
+            debug_v += [V]
+            debug_u_correct += [lucas_term_u(P, Q, k)[-1]]
+        else:
+            old_U = U
+            U = lucas_term_u_2k1(D, P, Q, U, V, k)
+            V = lucas_term_v_2k1(D, P, Q, old_U, V, k)
+            debug_u += [U]
+            debug_v += [V]
+            k *= 2
+            debug_terms += [k]
+            k += 1
+            debug_terms += [k]
+            debug_u_correct += [lucas_term_u(P, Q, k)[-1]]
+    
+    test = pow(U, 1, n)
+
+    if test != 0:
+        return False
+
+    #if V % n != 2 * Q:
+        #return False
+
+    return True
+            
+primes = [x for x in primes_sieve(1000)]
+bad = False
+for p in primes:
+    if not lucas_probable_prime(p):
+        bad = True
+
+print()
 def is_prime(n):
         # Test by trial division
         if not trial_division(n, primes):
@@ -110,12 +220,8 @@ def is_prime(n):
         if not miller_rabin(n, 100):
             return False
 
-        # Find D from the Jacobi Symbol and prepare for Lucas test
-        D = find_jacobi(n)
-        P = 1
-        Q = (1 - D) / 4
-
-        if not lucas_probable_prime(n, P, Q, D):
+        # Run the Lucas Probable Prime Test
+        if not lucas_probable_prime(n):
             return False
 
         return True
