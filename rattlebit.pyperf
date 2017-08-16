@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ProfilingTarget xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ProjectTarget>
+    <TargetProject>c77abfa5-bae5-4f83-98f8-e5ce93ebf693</TargetProject>
+    <FriendlyName>rattlebit</FriendlyName>
+  </ProjectTarget>
+  <Reports>
+    <Report>
+      <Filename>C:\Users\ChosunOne\AppData\Local\Temp\rattlebit_20170816.vsp</Filename>
+    </Report>
+  </Reports>
+</ProfilingTarget>
