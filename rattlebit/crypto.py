@@ -1,5 +1,6 @@
 import random
 import math
+import time
 
 # Sieve of Eratosthenes
 def primes_sieve(limit):
@@ -20,23 +21,25 @@ def trial_division(n, primes):
     return True
 
 # Miller-Rabin Primality Test
-def miller_rabin(n, k, primes):
-    if n < 2: return False
-    for p in primes:
-        if n < p * p: return True
-        if n % p == 0: return False
-    r, s = 0, n - 1
-    while s % 2 == 0:
+def miller_rabin(n, k):
+    # Optimization Variables
+    rrange = random.randrange
+    m = n - 1
+
+    if n < 2:
+        return False
+    r, s = 0, m
+    while not s & 1:
         r += 1
         s //= 2
     for _ in range(k):
-        a = random.randrange(2, n - 1)
+        a = rrange(2, m)
         x = pow(a, s, n)
-        if x == 1 or x == n - 1:
+        if x == 1 or x == m:
             continue
-        for _ in range(r - 1):
+        for __ in range(r - 1):
             x = pow(x, 2, n)
-            if x == n - 1:
+            if x == m:
                 break
         else:
             return False
@@ -65,7 +68,7 @@ def jacobi(D, n):
     j = 1
     if D < 0:
         D = -D
-        if n % 4 == 3: 
+        if n % 4 == 3:
             j = -j
     while D != 0:
         while D % 2 == 0:
@@ -92,12 +95,16 @@ def find_jacobi(n):
 
 def U_V_subscript(k, n, U, V, P, Q, D):
     k, n, U, V, P, Q, D = map(int, (k, n, U, V, P, Q, D))
-    digits = list(map(int, str(bin(k))[2:]))
+    digits = bin(k)[2:]
     subscript = 1
+    ___ = 0
     for digit in digits[1:]:
-        U, V = U*V % n, (pow(V, 2, n) - 2*pow(Q, subscript, n)) % n
+        ___ += 1
+        if ___ % 25 == 0: print(___)
+        U = U*V % n
+        V = (pow(V, 2, n) - 2*pow(Q, subscript, n)) % n
         subscript *= 2
-        if digit == 1:
+        if digit == '1':
             if not (P*U + V) & 1:
                 if not (D*U + P*V) & 1:
                     U, V = (P*U + V) >> 1, (D*U + P*V) >> 1
@@ -129,7 +136,7 @@ def lucas_pp(n, D, P, Q):
     if U == 0:
         return True
 
-    for r in xrange(s):
+    for r in range(s):
         U, V = (U*V) % n, (pow(V, 2, n) - 2*pow(Q, d*(2**r), n)) % n
         if V == 0:
             return True
@@ -149,38 +156,42 @@ def lucas_probable_prime(n):
     return lucas_pp(n, D, P, Q)
 
 def is_prime(n, primes):
-        # Test by trial division
-        if not trial_division(n, primes):
-            return False
+    # Test by trial division
+    trial = trial_division(n, primes)
+    if not trial:
+        return False
 
-        # Check if number is a perfect square
-        if is_square(n):
-            return False
+    # Check if number is a perfect square
+    square = is_square(n)
+    if square:
+        return False
 
-        # Run the Miller-Rabin Primality Test
-        if not miller_rabin(n, 128, primes):
-            return False
+    # Run the Miller-Rabin Primality Test
+    start = time.time()
+    miller_rabin_prime = miller_rabin(n, 64)
+    print('Miller-Rabin: {}'.format(time.time() - start))
+    if not miller_rabin_prime:
+        return False
 
-        # Run the Lucas Probable Prime Test
-        if not lucas_probable_prime(n):
-            return False
+    # Run the Lucas Probable Prime Test
+    start = time.time()
+    lucas = lucas_probable_prime(n)
+    print('Lucas: {}'.format(time.time() - start))
+    if not lucas:
+        return False
 
-        return True
+    return True
 
 # Generate a big stongly probable prime
 def gen_big_prime(bits):
     n = random.getrandbits(bits)
-    primes = primes_sieve(1000)
+    primes = primes_sieve(100000)
+    prime = False
 
     tries = 0
-    while not is_prime(n, primes):
+    while not prime:
+        prime = is_prime(n, primes)
         n = random.getrandbits(bits)
-        tries += 1
-        if tries % 100 == 0:
-            print(tries, n)
 
     return n
 
-zz = gen_big_prime(256)
-zzz = gen_big_prime(3072)
-print()
