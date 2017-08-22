@@ -1,6 +1,15 @@
 import random
 import math
 
+# Bitcoin Parameters
+BITCOIN_P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC2F  
+BITCOIN_A = 0
+BITCOIN_B = 7
+BITCOIN_G = 0x0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+BITCOIN_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+BITCOIN_H = 1
+
+
 # Sieve of Eratosthenes
 def primes_sieve(limit):
     a = [True] * limit                          # Initialize the primality list
@@ -181,6 +190,22 @@ def gen_big_prime(bits):
 
     return n
 
-zz = gen_big_prime(256)
-zzz = gen_big_prime(3072)
-print()
+# Add two points for ECC
+def point_add(p, x1, x2, y1, y2):
+    λ = (y2 - y1 / x2 - x1) % p
+    x3 = (λ**2 - x1 - x2) % p
+    y3 = (λ * (x1 - x3) - y1) % p
+    return (x3, y3)
+
+# Double a point for ECC
+def point_double(p, a, x, y):
+    λ = ((3 * x**2 + a)/(2 * y)) % p
+    x3 = (λ**2 - 2 * x) % p
+    y3 = (λ * (x - x3) - y) % p
+    return (x3, y3)
+
+# Generate an ECDSA public key from a private key with given curve parameters
+def ec_pub_key(priv_key, p, a, b, G, n, h):
+    pass
+
+    
